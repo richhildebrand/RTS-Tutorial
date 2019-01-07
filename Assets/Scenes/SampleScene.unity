@@ -407,6 +407,7 @@ MonoBehaviour:
   rotateSpeed: 100
   rotateAmount: 100
   selectedObject: {fileID: 0}
+  boxTexture: {fileID: 2800000, guid: 96357605c3ef2664983d02da3119e143, type: 3}
 --- !u!114 &98731971
 MonoBehaviour:
   m_ObjectHideFlags: 0

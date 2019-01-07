@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Experimental.UIElements;
+﻿using UnityEngine;
 
 public class InputManager : MonoBehaviour
 {
@@ -15,6 +12,10 @@ public class InputManager : MonoBehaviour
   private float panDetect = -15f;
   private float minHeight = 10f;
   private float maxHeight = 100f;
+
+  private Vector2 boxStart;
+  private Vector2 boxEnd;
+  public Texture boxTexture;
 
   // Start is called before the first frame update
   void Start()
@@ -31,6 +32,21 @@ public class InputManager : MonoBehaviour
     if (Input.GetMouseButtonDown(0))
     {
       LeftClick();
+    }
+
+    if (Input.GetMouseButton(0) && boxStart == Vector2.zero)
+    {
+      boxStart = Input.mousePosition;
+    }
+    else if (Input.GetMouseButton(0) && boxStart != Vector2.zero)
+    {
+      boxEnd = Input.mousePosition;
+    }
+
+    if (Input.GetMouseButtonUp(0))
+    {
+      boxStart = Vector2.zero;
+      boxEnd = Vector2.zero;
     }
 
     if (Input.GetKeyDown(KeyCode.Space))
@@ -114,6 +130,19 @@ public class InputManager : MonoBehaviour
     if (destination != origin)
     {
       Camera.main.transform.eulerAngles = Vector3.MoveTowards(origin, destination, Time.deltaTime * rotateSpeed);
+    }
+  }
+
+  void OnGUI()
+  {
+    if (boxStart != Vector2.zero && boxEnd != Vector2.zero)
+    {
+      var xStart = boxStart.x;
+      var yStart = Screen.height - boxStart.y;
+      var xEnd = boxEnd.x - boxStart.x;
+      var yEnd = -1 * ((Screen.height - boxStart.y) - (Screen.height - boxEnd.y));
+      var selectBox = new Rect(xStart, yStart , xEnd, yEnd);
+      GUI.DrawTexture(selectBox, boxTexture);
     }
   }
 }
