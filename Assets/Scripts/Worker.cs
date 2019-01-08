@@ -52,6 +52,7 @@ public class Worker : MonoBehaviour, IPerson
       drops = null;
 
       Task = TaskList.Delivering;
+      Debug.Log("now " + TaskList.Delivering);
     }
 
     if (Input.GetMouseButtonDown(1) && GetComponent<ObjectInfo>().isSelected)

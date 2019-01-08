@@ -5,8 +5,10 @@ public class ObjectInfo : MonoBehaviour
 {
   public GameObject IconCamera;
   public CanvasGroup InfoPanel;
+  public GameObject SelectionIndicator;
 
   public bool isSelected = false;
+  public bool isUnit;
   public string objectName;
   public Text nameDisplay;
 
@@ -44,6 +46,8 @@ public class ObjectInfo : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
+    SelectionIndicator.SetActive(isSelected);
+
     if (maxenergy <= 0)
     {
       energyBar.gameObject.SetActive(false);

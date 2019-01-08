@@ -16,6 +16,9 @@ public class InputManager : MonoBehaviour
   private Vector2 boxStart;
   private Vector2 boxEnd;
   public Texture boxTexture;
+  private Rect selectBox;
+
+  private GameObject[] units;
 
   // Start is called before the first frame update
   void Start()
@@ -45,14 +48,21 @@ public class InputManager : MonoBehaviour
 
     if (Input.GetMouseButtonUp(0))
     {
-      boxStart = Vector2.zero;
-      boxEnd = Vector2.zero;
+      units = GameObject.FindGameObjectsWithTag("Selectable");
+      //boxStart = Vector2.zero;
+      //boxEnd = Vector2.zero;
     }
 
     if (Input.GetKeyDown(KeyCode.Space))
     {
       Camera.main.transform.rotation = rotation;  
     }
+
+    var xStart = boxStart.x;
+    var yStart = Screen.height - boxStart.y;
+    var xEnd = boxEnd.x - boxStart.x;
+    var yEnd = -1 * ((Screen.height - boxStart.y) - (Screen.height - boxEnd.y));
+    selectBox = new Rect(xStart, yStart, xEnd, yEnd);
   }
 
   public void LeftClick()
@@ -137,11 +147,6 @@ public class InputManager : MonoBehaviour
   {
     if (boxStart != Vector2.zero && boxEnd != Vector2.zero)
     {
-      var xStart = boxStart.x;
-      var yStart = Screen.height - boxStart.y;
-      var xEnd = boxEnd.x - boxStart.x;
-      var yEnd = -1 * ((Screen.height - boxStart.y) - (Screen.height - boxEnd.y));
-      var selectBox = new Rect(xStart, yStart , xEnd, yEnd);
       GUI.DrawTexture(selectBox, boxTexture);
     }
   }
