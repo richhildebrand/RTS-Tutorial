@@ -49,8 +49,7 @@ public class InputManager : MonoBehaviour
     if (Input.GetMouseButtonUp(0))
     {
       units = GameObject.FindGameObjectsWithTag("Selectable");
-      //boxStart = Vector2.zero;
-      //boxEnd = Vector2.zero;
+      Multiselect();
     }
 
     if (Input.GetKeyDown(KeyCode.Space))
@@ -63,6 +62,19 @@ public class InputManager : MonoBehaviour
     var xEnd = boxEnd.x - boxStart.x;
     var yEnd = -1 * ((Screen.height - boxStart.y) - (Screen.height - boxEnd.y));
     selectBox = new Rect(xStart, yStart, xEnd, yEnd);
+  }
+
+  public void Multiselect()
+  {
+    foreach (var unit in units)
+    {
+      var objectInfo = unit.GetComponent<ObjectInfo>();
+      Vector2 unitPosition = Camera.main.WorldToScreenPoint(unit.transform.position);
+      objectInfo.isSelected = objectInfo.isUnit && selectBox.Contains(unitPosition, true);
+    }
+
+    boxStart = Vector2.zero;
+    boxEnd = Vector2.zero;
   }
 
   public void LeftClick()
