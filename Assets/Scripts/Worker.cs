@@ -40,7 +40,7 @@ public class Worker : MonoBehaviour, IPerson
       if (Task == TaskList.Gathering)
       {
         distanceToTarget = Vector3.Distance(transform.position, TargetNode.transform.position);
-        if (distanceToTarget <= 2f)
+        if (distanceToTarget <= 2.5f)
         {
           Gather();
         }
@@ -131,11 +131,15 @@ public class Worker : MonoBehaviour, IPerson
     {
       if (hit.collider.tag == "Ground")
       {
-        TargetNode.GetComponent<NodeManager>().gatherers--;
-        isGathering = false;
+        if (TargetNode != null && isGathering)
+        {
+          TargetNode.GetComponent<NodeManager>().gatherers--;
+          isGathering = false;
+        }
+
+        GetComponent<NavMeshObstacle>().enabled = false;
+        GetComponent<NavMeshAgent>().enabled = true;
         actionList.Move(this, hit);
-        GetComponent<NavMeshObstacle>().enabled = true;
-        GetComponent<NavMeshAgent>().enabled = false;
       }
       else if (hit.collider.tag == "Resource")
       {
