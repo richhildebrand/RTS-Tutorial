@@ -4,6 +4,7 @@ using UnityEngine;
 
 public enum TaskList
 {
+  Harvesting,
   Gathering,
   Moving,
   Idle,

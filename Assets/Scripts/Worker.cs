@@ -11,9 +11,11 @@ public class Worker : MonoBehaviour, IPerson
   public int heldResource;
   public int maxHeldResource;
   public bool isGathering = false;
+  public bool isGather = false;
 
   private ActionList actionList;
   private GameObject[] drops;
+  public float distanceToTarget;
 
   //IPerson
   public NavMeshAgent Agent { get; set; }
@@ -25,16 +27,54 @@ public class Worker : MonoBehaviour, IPerson
     StartCoroutine(GatherTick());
     Agent = GetComponent<NavMeshAgent>();
     actionList = FindObjectOfType<ActionList>();
+
+    GetComponent<NavMeshObstacle>().enabled = false;
+    GetComponent<NavMeshAgent>().enabled = true;
   }
 
   void Update()
   {
-    if (TargetNode == null)
+    if (TargetNode != null)
+    {
+      
+      if (Task == TaskList.Gathering)
+      {
+        distanceToTarget = Vector3.Distance(transform.position, TargetNode.transform.position);
+        if (distanceToTarget <= 2f)
+        {
+          Gather();
+        }
+      }
+      else if (Task == TaskList.Delivering)
+      {
+        drops = GameObject.FindGameObjectsWithTag("Drops");
+        var closestDropOff = GetClosestDropoff(drops).transform.position;
+        distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
+        if (distanceToTarget <= 2.5f)
+        {
+          if (RM.wood >= RM.maxWood)
+          {
+            Task = TaskList.Idle;
+          }
+          else
+          {
+            RM.wood += heldResource;
+            heldResource = 0;
+            Task = TaskList.Gathering;
+            Agent.destination = TargetNode.transform.position;
+            isGather = false;
+          }
+        }
+      }
+    }
+    else
     {
       if (heldResource > 0)
       {
         drops = GameObject.FindGameObjectsWithTag("Drops");
-        Agent.destination = GetClosestDropoff(drops).transform.position;
+        var closestDropOff = GetClosestDropoff(drops).transform.position;
+        Agent.destination = closestDropOff;
+        distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
         drops = null;
 
         Task = TaskList.Delivering;
@@ -47,8 +87,15 @@ public class Worker : MonoBehaviour, IPerson
 
     if (heldResource >= maxHeldResource)
     {
+      TargetNode.GetComponent<NodeManager>().gatherers--;
+      isGathering = false;
+      GetComponent<NavMeshObstacle>().enabled = false;
+      GetComponent<NavMeshAgent>().enabled = true;
+
       drops = GameObject.FindGameObjectsWithTag("Drops");
-      Agent.destination = GetClosestDropoff(drops).transform.position;
+      var closestDropOff = GetClosestDropoff(drops).transform.position;
+      Agent.destination = closestDropOff;
+      distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
       drops = null;
 
       Task = TaskList.Delivering;
@@ -61,6 +108,20 @@ public class Worker : MonoBehaviour, IPerson
     }
   }
 
+  public void Gather()
+  {
+    isGathering = true;
+    if (!isGather)
+    {
+      TargetNode.GetComponent<NodeManager>().gatherers++;
+      isGather = true; 
+    }
+    
+    heldResourceType = TargetNode.GetComponent<NodeManager>().resourceType;
+    GetComponent<NavMeshObstacle>().enabled = true;
+    GetComponent<NavMeshAgent>().enabled = false;
+  }
+
   public void RightClick()
   {
     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -70,52 +131,72 @@ public class Worker : MonoBehaviour, IPerson
     {
       if (hit.collider.tag == "Ground")
       {
+        TargetNode.GetComponent<NodeManager>().gatherers--;
+        isGathering = false;
         actionList.Move(this, hit);
+        GetComponent<NavMeshObstacle>().enabled = true;
+        GetComponent<NavMeshAgent>().enabled = false;
       }
       else if (hit.collider.tag == "Resource")
       {
         actionList.Harvest(this, hit);
         Debug.Log("my task is " + this.Task);
       }
-    }
-  }
-
-
-  public void OnTriggerEnter(Collider other)
-  {
-    Debug.Log("task -> " + Task);
-
-    GameObject hitObject = other.gameObject;
-    if (hitObject.tag == "Resource" && Task == TaskList.Gathering)
-    {
-      isGathering = true;
-      hitObject.GetComponent<NodeManager>().gatherers++;
-      heldResourceType = hitObject.GetComponent<NodeManager>().resourceType;
-    }
-    else if (hitObject.tag == "Drops" && Task == TaskList.Delivering)
-    {
-      if (RM.wood >= RM.maxWood)
+      else if (hit.collider.tag == "Drops")
       {
-        Task = TaskList.Idle;
-      }
-      else
-      {
-        RM.wood += heldResource;
-        heldResource = 0;
-        Task = TaskList.Gathering;
-        Agent.destination = TargetNode.transform.position;
+        TargetNode.GetComponent<NodeManager>().gatherers--;
+        isGathering = false;
+
+        drops = GameObject.FindGameObjectsWithTag("Drops");
+        var closestDropOff = GetClosestDropoff(drops).transform.position;
+        Agent.destination = closestDropOff;
+        distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
+        drops = null;
+
+        Task = TaskList.Delivering;
+        GetComponent<NavMeshObstacle>().enabled = true;
+        GetComponent<NavMeshAgent>().enabled = false;
+        Debug.Log("clicked on a drop... " + TaskList.Delivering);
       }
     }
   }
 
-  public void OnTriggerExit(Collider other)
+
+  //public void OnTriggerEnter(Collider other)
+  //{
+  //  Debug.Log("task -> " + Task);
+
+  //  GameObject hitObject = other.gameObject;
+  //  if (hitObject.tag == "Resource" && Task == TaskList.Gathering)
+  //  {
+  //    isGathering = true;
+  //    hitObject.GetComponent<NodeManager>().gatherers++;
+  //    heldResourceType = hitObject.GetComponent<NodeManager>().resourceType;
+  //  }
+  //  else if (hitObject.tag == "Drops" && Task == TaskList.Delivering)
+  //  {
+  //    if (RM.wood >= RM.maxWood)
+  //    {
+  //      Task = TaskList.Idle;
+  //    }
+  //    else
+  //    {
+  //      RM.wood += heldResource;
+  //      heldResource = 0;
+  //      Task = TaskList.Gathering;
+  //      Agent.destination = TargetNode.transform.position;
+  //    }
+  //  }
+  //}
+
+  public void OnTriggerExit(Collider other) //No longer used
   {
-    GameObject hitObject = other.gameObject;
-    if (hitObject.tag == "Resource")
-    {
-      isGathering = false;
-      hitObject.GetComponent<NodeManager>().gatherers--;
-    }
+    //GameObject hitObject = other.gameObject;
+    //if (hitObject.tag == "Resource")
+    //{
+    //  isGathering = false;
+    //  hitObject.GetComponent<NodeManager>().gatherers--;
+    //}
   }
 
   GameObject GetClosestDropoff(GameObject[] dropOffs)
