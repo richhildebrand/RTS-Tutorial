@@ -16,6 +16,7 @@ public class Worker : MonoBehaviour, IPerson
   private ActionList actionList;
   private GameObject[] drops;
   public float distanceToTarget;
+  private Vector3 offset;
 
   //IPerson
   public NavMeshAgent Agent { get; set; }
@@ -39,8 +40,10 @@ public class Worker : MonoBehaviour, IPerson
       
       if (Task == TaskList.Gathering)
       {
-        distanceToTarget = Vector3.Distance(transform.position, TargetNode.transform.position);
-        if (distanceToTarget <= 2.5f)
+        //distanceToTarget = Vector3.Distance(transform.position, TargetNode.transform.position);
+        offset = TargetNode.transform.position - transform.position;
+        distanceToTarget = offset.sqrMagnitude;
+        if (distanceToTarget <= 2.5f * 2.5f)
         {
           Gather();
         }
@@ -49,8 +52,10 @@ public class Worker : MonoBehaviour, IPerson
       {
         drops = GameObject.FindGameObjectsWithTag("Drops");
         var closestDropOff = GetClosestDropoff(drops).transform.position;
-        distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
-        if (distanceToTarget <= 2.5f)
+        //distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
+        offset = closestDropOff - transform.position;
+        distanceToTarget = offset.sqrMagnitude;
+        if (distanceToTarget <= 2.5f * 2.5f)
         {
           if (RM.wood >= RM.maxWood)
           {
@@ -74,7 +79,9 @@ public class Worker : MonoBehaviour, IPerson
         drops = GameObject.FindGameObjectsWithTag("Drops");
         var closestDropOff = GetClosestDropoff(drops).transform.position;
         Agent.destination = closestDropOff;
-        distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
+        //distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
+        offset = closestDropOff - transform.position;
+        distanceToTarget = offset.sqrMagnitude;
         drops = null;
 
         Task = TaskList.Delivering;
@@ -95,7 +102,9 @@ public class Worker : MonoBehaviour, IPerson
       drops = GameObject.FindGameObjectsWithTag("Drops");
       var closestDropOff = GetClosestDropoff(drops).transform.position;
       Agent.destination = closestDropOff;
-      distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
+      //distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
+      offset = closestDropOff - transform.position;
+      distanceToTarget = offset.sqrMagnitude;
       drops = null;
 
       Task = TaskList.Delivering;
@@ -154,7 +163,9 @@ public class Worker : MonoBehaviour, IPerson
         drops = GameObject.FindGameObjectsWithTag("Drops");
         var closestDropOff = GetClosestDropoff(drops).transform.position;
         Agent.destination = closestDropOff;
-        distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
+        //distanceToTarget = Vector3.Distance(closestDropOff, transform.position);
+        offset = closestDropOff - transform.position;
+        distanceToTarget = offset.sqrMagnitude;
         drops = null;
 
         Task = TaskList.Delivering;
